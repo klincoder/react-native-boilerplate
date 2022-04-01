@@ -8,7 +8,7 @@ import CustomIcon from "../components/CustomIcon";
 
 // VARIABLES
 // BASE URL
-export const baseURL = "https://638a-154-160-7-174.ngrok.io";
+export const baseURL = "https://klincoder.netlify.app";
 // https://klincoder.com
 // https://klincoder.netlify.app
 
