@@ -1,9 +1,10 @@
 // Import resources
 import React, { useState } from "react";
-import { Formik } from "formik";
-import * as Yup from "yup";
+import tw from "twrnc";
 import moment from "moment";
 import bcryptjs from "bcryptjs";
+import { Formik } from "formik";
+import * as Yup from "yup";
 import { useNavigation } from "@react-navigation/native";
 
 // Import custom files
@@ -12,29 +13,32 @@ import KeyboardAvoidWrapper from "./KeyboardAvoidWrapper";
 import CustomAlertModal from "./CustomAlertModal";
 import CustomSpinner from "./CustomSpinner";
 import FormRegisterDetails from "./FormRegisterDetails";
-import CustomFormInputOtp from "./CustomFormInputOtp";
+import CustomOtpInput from "./CustomOtpInput";
 import useCustomAlertState from "../hooks/useCustomAlertState";
 import useCustomSpinnerState from "../hooks/useCustomSpinnerState";
 import useCustomToastState from "../hooks/useCustomToastState";
-import useEmailSender from "../hooks/useEmailSender";
 import useCustomBcrypt from "../hooks/useCustomBcrypt";
+import CustomTextLink from "./CustomTextLink";
+import useAppSettings from "../hooks/useAppSettings";
+import CustomText from "./CustomText";
+import {
+  handleGenOtpCode,
+  handleTitleCase,
+  handleUserEmail,
+  handleAdminEmail,
+} from "../config/functions";
 import {
   alertMsg,
-  avatarPlaceholder,
-  handleGenOtpCode,
-  handleGenUsername,
-} from "../config/appConfig";
+  apiRoutes,
+  appImages,
+  digitsOnlyRegex,
+} from "../config/data";
 import {
   fireAuth,
   createUserWithEmailAndPassword,
   fireDB,
   setDoc,
   doc,
-  query,
-  collection,
-  where,
-  limit,
-  getDocs,
 } from "../config/firebase";
 
 // Component
@@ -42,6 +46,9 @@ function FormRegister() {
   // Define otp code
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [otpCode, setOtpCode] = useState();
+  const [formVal, setFormVal] = useState();
+
+  // Generate otp code
   const genOtpCode = handleGenOtpCode();
 
   // Define alert
@@ -56,37 +63,41 @@ function FormRegister() {
   // Define navigation
   const navigation = useNavigation();
 
-  // Define email sender
-  const { handleWelcomeEmail, handleNewUserEmail } = useEmailSender();
-
   // Define custom bcrypt
   const { handleHashCode } = useCustomBcrypt();
 
+  // Define app settings
+  const { todaysDate, todaysDateFormat1 } = useAppSettings();
+
   // Debug
-  //console.log("Debug formRegisterGENOTP: ", companyInfo);
+  //console.log("Debug formRegister: ",);
 
   // FORM CONFIG
   // Initial values
   const initialValues = {
-    firstName: "",
-    lastName: "",
-    emailAddr: "",
-    pass: "",
-    repeatPass: "",
+    fullName: formVal ? formVal?.fullName : "",
+    username: formVal ? formVal?.username : "",
+    emailAddr: formVal ? formVal?.emailAddr : "",
+    phoneNum: formVal ? formVal?.phoneNum : "",
+    pass: formVal ? formVal?.pass : "",
+    repeatPass: formVal ? formVal?.repeatPass : "",
     verifyCodeInput: "",
+    isOtpInput: showOtpInput,
   };
 
   // Validation
-  const validate = Yup.object({
-    firstName: Yup.string()
+  const validate = Yup.object().shape({
+    isOtpInput: Yup.boolean(),
+    fullName: Yup.string().required("Required").min(3, "Too short"),
+    username: Yup.string()
       .required("Required")
-      .min(3, "Too short")
-      .max(50, "Too long"),
-    lastName: Yup.string()
-      .required("Required")
-      .min(3, "Too short")
-      .max(50, "Too long"),
+      .min(6, "Too short")
+      .max(20, "Too long"),
     emailAddr: Yup.string().required("Required").email("Invalid email address"),
+    phoneNum: Yup.string()
+      .matches(digitsOnlyRegex, "Invalid number")
+      .min(10, "Too short")
+      .max(10, "Too long"),
     pass: Yup.string().required("Required").min(8, "Too short"),
     repeatPass: Yup.string()
       .required("Required")
@@ -95,30 +106,34 @@ function FormRegister() {
 
   // Submit form
   const onSubmit = async (values, { setSubmitting }) => {
-    // Debug
-    // console.log("Debug formRegisterOTPCODE: ", otpCode);
+    // Define variables
+    const finalFullName = handleTitleCase(values.fullName?.trim());
+    const finalUsername = values.username?.trim()?.toLowerCase();
+    const finalEmail = values.emailAddr?.trim()?.toLowerCase();
+    const finalPass = values.pass?.trim();
+    const finalPhoneNum = values.phoneNum?.trim();
+    const finalVerifyCodeInput = values.verifyCodeInput?.trim()?.toLowerCase();
 
-    // Define username
-    const username = handleGenUsername(values.emailAddr);
+    // If !finalVerifyCodeInput return
+    if (!finalVerifyCodeInput) return;
+
     // Hash otp code
     const hashOtpCode = await handleHashCode(otpCode);
     // Hash password
-    const hashPass = await handleHashCode(values.pass);
-
+    const hashPass = await handleHashCode(finalPass);
     // Verify code input
     const compareVerifyCode = bcryptjs.compareSync(
-      values.verifyCodeInput,
+      finalVerifyCodeInput,
       hashOtpCode
     );
+
+    // Debug
+    //console.log("Debug formRegisterSubmit: ", compareVerifyCode);
 
     // If compare verify code
     if (compareVerifyCode) {
       // Register user
-      await createUserWithEmailAndPassword(
-        fireAuth,
-        values.emailAddr,
-        values.pass
-      )
+      await createUserWithEmailAndPassword(fireAuth, finalEmail, finalPass)
         .then(async () => {
           // Define current user id
           const currentUserID = fireAuth.currentUser.uid;
@@ -128,28 +143,35 @@ function FormRegister() {
             regMethod: "app",
             userID: currentUserID,
             role: "user",
-            avatar: avatarPlaceholder,
-            firstName: values.firstName,
-            lastName: values.lastName,
-            phoneNumber: "",
-            emailAddress: values.emailAddr,
+            avatar: appImages?.avatar,
+            fullName: finalFullName,
+            username: finalUsername,
+            emailAddress: finalEmail,
+            phoneNumber: finalPhoneNum,
             password: hashPass,
             emailVerified: true,
-            username: username,
+            acctStatus: "active",
             pushNotifications: true,
-            dateCreated: moment().format(),
-            dateUpdated: moment().format(),
+            dateCreated: todaysDate,
+            dateUpdated: todaysDate,
           });
 
           // Send emails
-          // Welcome email - user
-          await handleWelcomeEmail(
-            username,
-            values.emailAddr,
-            values.emailAddr
+          // Define emailMsg
+          const emailMsg = {
+            username: finalUsername,
+            email: finalEmail,
+            date: todaysDateFormat1,
+          };
+          // Welcome email to user
+          await handleUserEmail(
+            finalUsername,
+            finalEmail,
+            emailMsg,
+            apiRoutes?.welcome
           );
-          // New user email - admin
-          await handleNewUserEmail(values.emailAddr);
+          // New user email to admin
+          await handleAdminEmail(emailMsg, apiRoutes?.newUser);
 
           // Alert success
           toast.success(alertMsg?.regSucc);
@@ -171,57 +193,58 @@ function FormRegister() {
 
   // Return component
   return (
-    <>
-      {/** Alert modal */}
-      <CustomAlertModal
-        visible={alert.visible}
-        content={alert.message}
-        hideDialog={alert.hideAlert}
-        cancelAction={alert.hideAlert}
-      />
+    <KeyboardAvoidWrapper>
+      <Formik
+        initialValues={initialValues}
+        onSubmit={onSubmit}
+        validationSchema={validate}
+        enableReinitialize
+      >
+        {({ values, isSubmitting }) => (
+          <>
+            {/** Debug */}
+            {/* {console.log("Debug formRegisterValues: ", values)} */}
 
-      {/** Form */}
-      <KeyboardAvoidWrapper>
-        <Formik
-          initialValues={initialValues}
-          onSubmit={onSubmit}
-          validationSchema={validate}
-          enableReinitialize
-        >
-          {({ values, isSubmitting }) => (
-            <>
-              {/** Debug */}
-              {/* {console.log("Debug formRegisterValues: ", values)} */}
+            {/** Show spinner */}
+            <CustomSpinner isLoading={spinner.loading || isSubmitting} />
 
-              {/** Show spinner */}
-              <CustomSpinner isLoading={spinner.loading || isSubmitting} />
+            {/** Alert modal */}
+            <CustomAlertModal
+              visible={alert.visible}
+              hideDialog={alert.hideAlert}
+              cancelAction={alert.hideAlert}
+              content={<CustomText>{alert.message}</CustomText>}
+            />
 
-              {/** If showOtpInput */}
-              {showOtpInput ? (
-                <>
-                  {/** Otp input */}
-                  <CustomFormInputOtp
-                    name="verifyCodeInput"
-                    label="Enter OTP"
-                  />
-                </>
-              ) : (
-                <>
-                  {/** Form details */}
-                  <FormRegisterDetails
-                    otpCode={genOtpCode}
-                    setOtpCode={() => setOtpCode(genOtpCode)}
-                    setShowOtpInput={() => setShowOtpInput(true)}
-                  />
-                </>
-              )}
-            </>
-          )}
-        </Formik>
-      </KeyboardAvoidWrapper>
-    </>
-  );
-}
+            {/** If showOtpInput */}
+            {showOtpInput ? (
+              <>
+                {/** Otp input */}
+                <CustomOtpInput name="verifyCodeInput" label="Enter OTP" />
+                {/** Restart process */}
+                <CustomTextLink
+                  title="Restart Process"
+                  onPress={() => setShowOtpInput(false)}
+                  styleTitle={tw`mt-12 text-center`}
+                />
+              </>
+            ) : (
+              <>
+                {/** Form details */}
+                <FormRegisterDetails
+                  otpCode={genOtpCode}
+                  setOtpCode={() => setOtpCode(genOtpCode)}
+                  setShowOtpInput={() => setShowOtpInput(true)}
+                  setFormVal={() => setFormVal(values)}
+                />
+              </>
+            )}
+          </>
+        )}
+      </Formik>
+    </KeyboardAvoidWrapper>
+  ); // close return
+} // close component
 
 // Export
 export default FormRegister;

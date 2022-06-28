@@ -24,8 +24,8 @@ function useCustomClipboard() {
   };
 
   // Return component
-  return { handleCopyToClipboard };
-}
+  return { handleCopyToClipboard }; // close return
+} // close component
 
 // Export
 export default useCustomClipboard;

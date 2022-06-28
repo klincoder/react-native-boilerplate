@@ -14,14 +14,14 @@ function BlankScreen() {
 
   // Return component
   return (
-    <CustomSafeView>
-      {/** CONTAINER */}
+    <CustomSafeView style={tw`px-4 pt-3`}>
+      {/** SECTION - STARTER */}
       <View style={tw`flex-1 items-center justify-center`}>
         <CustomText>BlankScreen</CustomText>
       </View>
     </CustomSafeView>
-  );
-}
+  ); // close return
+} // close component
 
 // Export
 export default BlankScreen;

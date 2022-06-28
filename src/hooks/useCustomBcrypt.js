@@ -3,12 +3,12 @@ import axios from "axios";
 import bcryptjs from "bcryptjs";
 
 // Import custom files
-import { baseURL } from "../config/appConfig";
+import { baseUrl } from "../config/data";
 
 // Component
 function useCustomBcrypt() {
   // Debug
-  //console.log("Debug useCustomBcrypt: Test function");
+  //console.log("Debug useCustomBcrypt:");
 
   // FUNCTIONS
   // HANDLE HASH CODE
@@ -16,7 +16,7 @@ function useCustomBcrypt() {
     // Call API
     const res = await axios({
       method: "POST",
-      url: `${baseURL}/api/app-hash-code`,
+      url: `${baseUrl}/api/app-hash-code`,
       data: { data: { code: otpCode } },
     });
     // Debug
@@ -29,9 +29,9 @@ function useCustomBcrypt() {
     // If !newInput or !hashedVal, return
     if (
       !newInput ||
-      typeof newInput != "string" ||
+      typeof newInput !== "string" ||
       !hashedVal ||
-      typeof hashedVal != "string"
+      typeof hashedVal !== "string"
     )
       return false;
     // Verify password
@@ -41,8 +41,8 @@ function useCustomBcrypt() {
   }; // close fxn
 
   // Return component
-  return { handleHashCode, handleVerifyPin };
-}
+  return { handleHashCode, handleVerifyPin }; // close return
+} // close component
 
 // Export
 export default useCustomBcrypt;

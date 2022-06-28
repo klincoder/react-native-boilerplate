@@ -18,8 +18,8 @@ function CustomImage({ isLink, image, ...rest }) {
         </>
       )}
     </>
-  );
-}
+  ); // cloe return
+} // close component
 
 // Export
 export default CustomImage;

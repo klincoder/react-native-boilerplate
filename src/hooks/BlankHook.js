@@ -14,8 +14,8 @@ function BlankHook() {
   // HANDLE
 
   // Return component
-  return { testFxn };
-}
+  return { testFxn }; // close return
+} // close component
 
 // Export
 export default BlankHook;

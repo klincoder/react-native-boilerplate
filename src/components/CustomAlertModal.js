@@ -5,12 +5,13 @@ import { Paragraph, Dialog, Portal } from "react-native-paper";
 import tw from "twrnc";
 
 // Import custom files
-import colors from "../config/colors";
+import { appColors } from "../config/data";
 import CustomButton from "./CustomButton";
 import CustomDivider from "./CustomDivider";
 
 // Component
 function CustomAlertModal({
+  title,
   visible,
   hideDialog,
   content,
@@ -18,6 +19,7 @@ function CustomAlertModal({
   confirmText,
   cancelAction,
   cancelText,
+  isDetails,
 }) {
   // Return component
   return (
@@ -26,14 +28,18 @@ function CustomAlertModal({
       <Portal>
         <Dialog visible={visible} onDismiss={hideDialog}>
           {/** Title */}
-          <Dialog.Title>Alert</Dialog.Title>
+          {title && <Dialog.Title>{title}</Dialog.Title>}
 
           {/** Divider */}
           <CustomDivider />
 
           {/** Content */}
           <Dialog.Content>
-            <Paragraph style={tw`pt-2 text-base`}>{content}</Paragraph>
+            {isDetails ? (
+              <>{content}</>
+            ) : (
+              <Paragraph style={tw`pt-4 text-lg`}>{content}</Paragraph>
+            )}
           </Dialog.Content>
 
           {/** Divider */}
@@ -44,11 +50,11 @@ function CustomAlertModal({
             {/** Cancel button */}
             {cancelAction && (
               <CustomButton
-                isNormal
+                isPaper
                 onPress={cancelAction}
-                styleTitle={tw`text-base text-[${colors.white}]`}
-                styleTitleContainer={[
-                  tw`px-4 py-3 bg-[${colors.danger}]`,
+                stylePaperLabel={tw`text-[${appColors?.white}]`}
+                stylePaper={[
+                  tw`bg-[${appColors?.danger}]`,
                   confirmAction && tw`mr-2`,
                 ]}
               >
@@ -59,10 +65,10 @@ function CustomAlertModal({
             {/** Confirm button */}
             {confirmAction && (
               <CustomButton
-                isNormal
+                isPaper
                 onPress={confirmAction}
-                styleTitle={tw`text-base text-[${colors.white}]`}
-                styleTitleContainer={tw`mr-2 px-4 py-3 bg-[${colors.success}]`}
+                stylePaperLabel={tw`text-[${appColors?.white}]`}
+                stylePaper={tw`mr-2 bg-[${appColors?.success}]`}
               >
                 {confirmText || "Confirm"}
               </CustomButton>
@@ -71,8 +77,8 @@ function CustomAlertModal({
         </Dialog>
       </Portal>
     </View>
-  );
-}
+  ); // close return
+} // close component
 
 // Export
 export default CustomAlertModal;

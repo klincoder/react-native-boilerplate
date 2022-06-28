@@ -1,18 +1,18 @@
 // Import resources
 import React from "react";
-import { StyleSheet } from "react-native";
-import { FontAwesome, AntDesign } from "@expo/vector-icons";
+import tw from "twrnc";
 
 // Import custom files
-import colors from "../config/colors";
 import CustomText from "./CustomText";
 import CustomIcon from "./CustomIcon";
+import { appColors } from "../config/data";
 
 // Component
 function CustomIconMsg({
+  type,
   icon,
-  iconSize,
-  iconColor,
+  size,
+  color,
   message,
   styleMsg,
   ...rest
@@ -22,27 +22,20 @@ function CustomIconMsg({
     <>
       {/** Icon */}
       <CustomIcon
-        icon={icon}
-        size={iconSize}
-        color={iconColor || colors.grey}
         {...rest}
+        type={type}
+        icon={icon}
+        size={size}
+        color={color || appColors?.grey}
       />
 
       {/** Message */}
       {message && (
-        <CustomText style={[styles.msg, styleMsg]}>{message}</CustomText>
+        <CustomText style={[tw`pt-2 text-lg`, styleMsg]}>{message}</CustomText>
       )}
     </>
-  );
-}
-
-// Styles
-const styles = StyleSheet.create({
-  msg: {
-    paddingTop: 5,
-    fontSize: 16,
-  },
-});
+  ); // close return
+} // close component
 
 // Export
 export default CustomIconMsg;

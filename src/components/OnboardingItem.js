@@ -4,10 +4,9 @@ import { View } from "react-native";
 import tw from "twrnc";
 
 // Import custom files
-import colors from "../config/colors";
-import { onboardingPlaceholder } from "../config/appConfig";
 import CustomText from "./CustomText";
 import CustomImage from "./CustomImage";
+import { appColors, appImages, appStyles } from "../config/data";
 
 // Component
 function OnboardingItem({ item, width, currSlide }) {
@@ -20,24 +19,29 @@ function OnboardingItem({ item, width, currSlide }) {
       {/** Image */}
       <CustomImage
         isLink
-        image={item?.image || onboardingPlaceholder}
+        image={item?.image || appImages?.avatar}
         style={{ width, height: "75%", resizeMode: "contain" }}
       />
+
       {/** Title */}
       <CustomText
-        style={tw`font-bold mt-3 text-3xl text-center text-[${colors.white}]`}
+        style={[
+          tw`mt-2 text-3xl text-center text-[${appColors?.white}]`,
+          appStyles?.bold,
+        ]}
       >
         {item?.title}
       </CustomText>
+
       {/** Description */}
       <CustomText
-        style={tw`mt-5 max-w-xs leading-3 text-base text-center text-[${colors.lightgrey}]`}
+        style={tw`mt-3 max-w-xs leading-3 text-base text-center text-[${appColors?.lightgrey}]`}
       >
         {item?.description}
       </CustomText>
     </View>
-  );
-}
+  ); // close return
+} // close component
 
 // Export
 export default OnboardingItem;

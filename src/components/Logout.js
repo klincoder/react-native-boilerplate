@@ -1,62 +1,31 @@
 // Import resources
 import React from "react";
-import { TouchableOpacity } from "react-native";
-import { IconButton } from "react-native-paper";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useNavigation } from "@react-navigation/native";
-import { useResetRecoilState } from "recoil";
 import tw from "twrnc";
 
 // Import custom files
-import colors from "../config/colors";
-import { userAtom } from "../recoil/atoms";
-import { alertMsg } from "../config/appConfig";
 import useCustomAlertState from "../hooks/useCustomAlertState";
-import useCustomToastState from "../hooks/useCustomToastState";
 import CustomButton from "./CustomButton";
 import CustomAlertModal from "./CustomAlertModal";
 import CustomText from "./CustomText";
+import useAppSettings from "../hooks/useAppSettings";
+import CustomIcon from "./CustomIcon";
+import { alertMsg, appColors } from "../config/data";
 
 // Component
-function Logout({ mode, isButton, isIconButton, ...rest }) {
-  // Define atom
-  const resetUserAtom = useResetRecoilState(userAtom);
-
+function Logout({ isNormal, isButton, ...rest }) {
   // Define alert state
   const alert = useCustomAlertState();
 
-  // Define toast state
-  const toast = useCustomToastState();
-
-  // Define navigation
-  const navigation = useNavigation();
+  // Define app settings
+  const { handleLogout } = useAppSettings();
 
   // FUNCTIONS
   // HANDLE CONFIRM LOGOUT
   const handleConfirmLogout = () => {
     alert.showAlert(alertMsg?.logoutConfirm);
-  };
+  }; // close fxn
 
-  // HANDLE LOGOUT
-  const handleLogout = async () => {
-    // Set async storage to null
-    await AsyncStorage.removeItem("@loggedInUser")
-      .then(() => {
-        // Reset user atom
-        resetUserAtom();
-        // Hide alert
-        alert.hideAlert();
-        // Toast succ
-        toast.success(alertMsg?.logoutSucc);
-      })
-      .catch((err) => {
-        // Alert err
-        alert.showAlert(err.message);
-        //console.log("Error logout: ", err);
-      });
-  };
-
-  // Return
+  // Return component
   return (
     <>
       {/** Alert modal */}
@@ -66,39 +35,45 @@ function Logout({ mode, isButton, isIconButton, ...rest }) {
         hideDialog={alert.hideAlert}
         cancelAction={alert.hideAlert}
         cancelText="Cancel"
-        confirmAction={handleLogout}
+        confirmAction={() => {
+          // Hide alert
+          alert.hideAlert();
+          // Logout
+          handleLogout();
+        }}
       />
 
-      {/** Button */}
-      {isButton && (
+      {/** isNormal */}
+      {isNormal && (
         <CustomButton
-          icon="logout"
-          mode={mode}
+          isTouchable
           onPress={handleConfirmLogout}
-          {...rest}
+          styleTouchableView={tw`flex-row items-center`}
         >
-          Logout
+          <CustomIcon
+            type="materialIcons"
+            icon="logout"
+            size={20}
+            style={tw`mr-2 text-[${appColors?.white}]`}
+          />
+          {/** Label */}
+          <CustomText style={tw`text-white text-lg font-medium`}>
+            Logout
+          </CustomText>
         </CustomButton>
       )}
 
-      {/** Icon button */}
-      {isIconButton && (
-        <TouchableOpacity
-          style={tw`flex-row`}
-          onPress={handleConfirmLogout}
-          activeOpacity={0.6}
-        >
-          {/** Icon */}
-          <IconButton icon="logout" color={colors.white} size={24} {...rest} />
-          {/** Label */}
-          <CustomText style={tw`text-white self-center text-lg font-medium`}>
-            Logout
+      {/** isButton */}
+      {isButton && (
+        <CustomButton isTouchable onPress={handleConfirmLogout}>
+          <CustomText style={tw`text-base`}>
+            <CustomIcon type="materialIcons" icon="logout" /> Logout
           </CustomText>
-        </TouchableOpacity>
+        </CustomButton>
       )}
     </>
-  );
-}
+  ); // close return
+} // close component
 
 // Export
 export default Logout;

@@ -59,8 +59,8 @@ import {
   getDownloadURL,
 } from "firebase/storage";
 
-// DEFINE FIREBASE CONFIG DEV
-const firebaseConfigDev = {
+// FIREBASE DEV CONFIG
+const firebaseDev = {
   apiKey: FIREBASE_DEV_API_KEY,
   authDomain: FIREBASE_DEV_AUTH_DOMAIN,
   projectId: FIREBASE_DEV_PROJECT_ID,
@@ -69,8 +69,8 @@ const firebaseConfigDev = {
   appId: FIREBASE_DEV_APP_ID,
 };
 
-// DEFINE FIREBASE CONFIG PROD
-const firebaseConfigProd = {
+// FIREBASE PROD CONFIG
+const firebaseProd = {
   apiKey: FIREBASE_PROD_API_KEY,
   authDomain: FIREBASE_PROD_AUTH_DOMAIN,
   projectId: FIREBASE_PROD_PROJECT_ID,
@@ -81,7 +81,7 @@ const firebaseConfigProd = {
 
 // INITIALZE APP
 // Check app initialzation
-const app = !getApps().length ? initializeApp(firebaseConfigDev) : getApp();
+const app = !getApps().length ? initializeApp(firebaseDev) : getApp();
 
 // Debug
 //console.log("Firebase: ", app.options);

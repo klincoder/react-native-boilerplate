@@ -1,20 +1,37 @@
 // Import resources
 import { atom } from "recoil";
 
-// DEFINE ATOMS
-// User atom
-export const userAtom = atom({
-  key: "userAtom",
-  default: null,
+// INTERNET CONN ATOM
+export const internetConnAtom = atom({
+  key: "internetConnAtom",
+  default: true,
 });
 
-// App settings atom
+// APP SETTINGS ATOM
 export const appSettingsAtom = atom({
   key: "appSettingsAtom",
   default: null,
 });
 
-// App onboarding atom
+// ALL USERS ATOM
+export const allUsersAtom = atom({
+  key: "allUsersAtom",
+  default: [],
+});
+
+// USER ATOM
+export const userAtom = atom({
+  key: "userAtom",
+  default: null,
+});
+
+// USER INTERNET ATOM
+export const userInternetAtom = atom({
+  key: "userInternetAtom",
+  default: {},
+});
+
+// APP ONBOARDING ATOM
 export const appOnboardingAtom = atom({
   key: "appOnboardingAtom",
   default: null,

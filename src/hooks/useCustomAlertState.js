@@ -27,19 +27,19 @@ const useCustomAlertState = () => {
     setMessage(msg);
     // Set visible
     setVisible(true);
-  };
+  }; // close fxn
 
   // HANDLE GO TO LOGIN SCREEN
   const goToLogin = () => {
     hideAlert();
     navigation.navigate(routes.LOGIN);
-  };
+  }; // close fxn
 
   // HANDLE GO TO PREVIOUS SCREEN
   const goBackToPrev = () => {
     hideAlert();
     navigation.goBack();
-  };
+  }; // close fxn
 
   // HANDLE FIREBASE ERROR CODE
   const handleErrorCode = (errCode) => {
@@ -51,15 +51,14 @@ const useCustomAlertState = () => {
         case "auth/wrong-password":
           customErrMsg = "Wrong password";
           break;
-
         default:
           customErrMsg = "Unknown error occured";
           break;
-      }
+      } // close switch
     } // close if hasError
     // Return
     return setMessage(customErrMsg);
-  };
+  }; // close fxn
 
   // Return component
   return {
@@ -73,8 +72,8 @@ const useCustomAlertState = () => {
     setHasError,
     handleErrorCode,
     goBackToPrev,
-  };
-};
+  }; // close retun
+}; // close component
 
 // Export
 export default useCustomAlertState;

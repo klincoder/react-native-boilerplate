@@ -1,31 +1,34 @@
 // Import resources
 import React from "react";
+import { View } from "react-native";
 import tw from "twrnc";
 
 // Import custom files
-import colors from "../config/colors";
 import CustomSafeView from "../components/CustomSafeView";
 import CustomIconMsg from "../components/CustomIconMsg";
+import { appColors } from "../config/data";
 
 // Component
 function NoInternetScreen() {
   // Return component
   return (
-    <CustomSafeView
-      style={tw`flex-1 items-center justify-center bg-[${colors.secondary}]`}
-    >
-      {/** Icon msg */}
-      <CustomIconMsg
-        isMaterialIcon
-        icon="wifi-off"
-        iconSize={64}
-        iconColor={colors.black}
-        styleMsg={tw`max-w-xs text-center`}
-        message="No Internet Connection. Connect to the internet to continue..."
-      />
+    <CustomSafeView style={tw`bg-[${appColors?.lightgrey}]`}>
+      {/** SECTION - ICON MESSAGE */}
+      <View style={tw`flex-1 items-center justify-center`}>
+        {/** Icon msg */}
+        <CustomIconMsg
+          isMaterialIcon
+          type="materialIcons"
+          icon="wifi-off"
+          size={50}
+          color={appColors?.black}
+          styleMsg={tw`max-w-xs text-center`}
+          message="No Internet Connection"
+        />
+      </View>
     </CustomSafeView>
-  );
-}
+  ); // close return
+} // close component
 
 // Export
 export default NoInternetScreen;

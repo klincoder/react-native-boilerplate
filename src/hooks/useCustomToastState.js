@@ -3,33 +3,34 @@ import Toast from "react-native-toast-message";
 
 // Component
 function useCustomToastState() {
-  // Define toast success
+  // FUNCTIONS
+  // Define success
   const success = (message) => {
     Toast.show({
       type: "success",
-      position: "bottom",
+      position: "top",
       text1: "Success",
       text2: message,
       visibilityTime: 5000,
       autoHide: true,
-      topOffset: 50,
+      topOffset: 65,
       bottomOffset: 50,
     });
-  };
+  }; // close fxn
 
-  // Define toast error
+  // Define error
   const error = (message) => {
     Toast.show({
       type: "error",
-      position: "bottom",
+      position: "top",
       text1: "Error",
       text2: message,
-      visibilityTime: 5000,
+      visibilityTime: 8000,
       autoHide: true,
-      topOffset: 50,
+      topOffset: 65,
       bottomOffset: 50,
     });
-  };
+  }; // close fxn
 
   // Define toast info
   const info = (message) => {
@@ -38,16 +39,16 @@ function useCustomToastState() {
       position: "top",
       text1: "Info",
       text2: message,
-      visibilityTime: 5000,
+      visibilityTime: 8000,
       autoHide: true,
-      topOffset: 50,
+      topOffset: 65,
       bottomOffset: 50,
     });
-  };
+  }; // close fxn
 
-  // Return
-  return { success, error, info };
-}
+  // Return component
+  return { success, error, info }; // close return
+} // close component
 
 // Export
 export default useCustomToastState;

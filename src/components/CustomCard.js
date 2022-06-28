@@ -12,8 +12,8 @@ function CustomCard({ children, cardActions, ...rest }) {
       {/** Card actions */}
       {cardActions && <Card.Actions>{cardActions}</Card.Actions>}
     </Card>
-  );
-}
+  ); // close return
+} // close component
 
 // Export
 export default CustomCard;

@@ -9,8 +9,8 @@ function CustomText({ children, style, ...rest }) {
     <Text style={style} {...rest}>
       {children}
     </Text>
-  );
-}
+  ); // close return
+} // close component
 
-// Export component
+// Export
 export default CustomText;

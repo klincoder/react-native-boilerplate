@@ -9,8 +9,6 @@ import moment from "moment";
 
 // Import custom files
 import routes from "../screens/routes";
-import { alertMsg, phoneRegex } from "../config/appConfig";
-import { fireDB, doc, setDoc } from "../config/firebase";
 import useCustomToastState from "../hooks/useCustomToastState";
 import useCustomSpinnerState from "../hooks/useCustomSpinnerState";
 import useCustomAlertState from "../hooks/useCustomAlertState";
@@ -18,8 +16,12 @@ import useLoggedInUser from "../hooks/useLoggedInUser";
 import CustomSpinner from "./CustomSpinner";
 import KeyboardAvoidWrapper from "./KeyboardAvoidWrapper";
 import CustomAlertModal from "./CustomAlertModal";
-import CustomFormInput from "./CustomFormInput";
 import CustomButton from "./CustomButton";
+import CustomTextInputForm from "./CustomTextInputForm";
+import useAppSettings from "../hooks/useAppSettings";
+import CustomText from "./CustomText";
+import { alertMsg, phoneRegex } from "../config/data";
+import { fireDB, doc, setDoc } from "../config/firebase";
 
 // Component
 function FormEditProfile() {
@@ -38,142 +40,134 @@ function FormEditProfile() {
   // Define alert state
   const alert = useCustomAlertState();
 
+  // Define app settings
+  const { todaysDate } = useAppSettings();
+
   // Debug
   //console.log("Debug formEditProfile: ", );
 
   // FORM CONFIG
   // Define initial values
   const initialValues = {
-    firstName: user ? user?.firstName : "",
-    lastName: user ? user?.lastName : "",
-    phoneNumber: user ? user?.phoneNumber : "",
+    fullName: user ? user?.fullName : "",
+    phoneNum: user ? user?.phoneNumber : "",
   };
 
   // Validations
   const validate = Yup.object().shape({
-    firstName: Yup.string().required("Required").min(3, "Too small"),
-    lastName: Yup.string().required("Required").min(3, "Too small"),
-    // phoneNumber: Yup.string()
-    //   .required("Required")
-    //   .matches(phoneRegex, "Invalid phone number"),
+    fullName: Yup.string().required("Required").min(3, "Too small"),
+    phoneNum: Yup.string().required("Required"),
+    //.matches(phoneRegex, "Invalid phone number"),
   });
 
   // Submit form
   const onSubmit = async (values, { setSubmitting }) => {
+    // Define variables
+    const finalFullName = values.fullName?.trim();
+    const finalPhone = values.phoneNum?.trim();
+
+    // Try catch
+    try {
+      // Update user profile
+      const editUserRef = doc(fireDB, "users", `${userID}`);
+      // Await
+      await setDoc(
+        editUserRef,
+        {
+          fullName: finalFullName,
+          phoneNumber: finalPhone,
+          dateUpdated: todaysDate,
+        },
+        { merge: true }
+      ); // close set doc
+      // Alert succ
+      toast.success(alertMsg?.profileSucc);
+      // Set submitting
+      setSubmitting(false);
+      // Push to profile
+      navigation.navigate(routes.PROFILE);
+    } catch (err) {
+      alert.showAlert(err.message);
+      //setSubmitting(false);
+    } // close try catch
     // Debug
     //console.log("Debug formEditProfSubmit", values);
-    // Update user profile
-    const editUserRef = doc(fireDB, "users", `${userID}`);
-    await setDoc(
-      editUserRef,
-      {
-        firstName: values.firstName,
-        lastName: values.lastName,
-        phoneNumber: values.phoneNumber,
-        dateUpdated: moment().format(),
-      },
-      { merge: true }
-    );
-
-    // Alert succ
-    toast.success(alertMsg?.profileSucc);
-    // Set submitting
-    setSubmitting(false);
-    // Navigate
-    navigation.navigate(routes.PROFILE);
   }; // close submit form
 
   // Return component
   return (
-    <>
-      {/** Form */}
-      <KeyboardAvoidWrapper>
-        <Formik
-          initialValues={initialValues}
-          onSubmit={onSubmit}
-          validationSchema={validate}
-          enableReinitialize
-        >
-          {({ values, isValid, isSubmitting, dirty, handleSubmit }) => (
-            <View>
-              {/** Debug */}
-              {/* {console.log("Debug formEditProfValues: ", values)} */}
+    <KeyboardAvoidWrapper>
+      <Formik
+        initialValues={initialValues}
+        onSubmit={onSubmit}
+        validationSchema={validate}
+        enableReinitialize
+      >
+        {({ values, isValid, isSubmitting, dirty, handleSubmit }) => (
+          <View>
+            {/** Debug */}
+            {/* {console.log("Debug formEditProfValues: ", values)} */}
 
-              {/** Show loading */}
-              <CustomSpinner isLoading={isSubmitting} />
+            {/** Show spinner */}
+            <CustomSpinner isLoading={isSubmitting} />
 
-              {/** Alert modal */}
-              <CustomAlertModal
-                visible={alert.visible}
-                content={alert.message}
-                hideDialog={alert.hideAlert}
-                actionCancel={alert.hideAlert}
-              />
+            {/** Alert modal */}
+            <CustomAlertModal
+              visible={alert.visible}
+              hideDialog={alert.hideAlert}
+              actionCancel={alert.hideAlert}
+              content={<CustomText>{alert.message}</CustomText>}
+            />
 
-              {/** First name */}
-              <View style={tw`flex-row`}>
-                <View style={tw`w-1/2`}>
-                  <CustomFormInput
-                    name="firstName"
-                    icon="account"
-                    placeholder="First Name"
-                    mode="outlined"
-                    autoCapitalize="words"
-                    defaultValue={user?.firstName}
-                  />
-                </View>
+            {/** Full name */}
+            <CustomTextInputForm
+              name="fullName"
+              label="Full Name"
+              placeholder="Enter full name"
+              leftIconName="user"
+              autoCapitalize="words"
+              defaultValue={user?.fullName}
+            />
 
-                {/** Last name */}
-                <View style={tw`w-1/2`}>
-                  <CustomFormInput
-                    name="lastName"
-                    icon="account"
-                    placeholder="Last Name"
-                    mode="outlined"
-                    autoCapitalize="words"
-                    defaultValue={user?.lastName}
-                  />
-                </View>
-              </View>
+            {/** Phone number */}
+            <CustomTextInputForm
+              name="phoneNum"
+              label="Phone Number"
+              placeholder="Phone Number"
+              leftIconType="feather"
+              leftIconName="phone"
+              keyboardType="numeric"
+              defaultValue={user?.phoneNumber}
+            />
 
-              {/** Phone number */}
-              <CustomFormInput
-                name="phoneNumber"
-                icon="phone"
-                placeholder="Phone Number"
-                mode="outlined"
-                keyboardType="numeric"
-                defaultValue={user?.phoneNumber}
-              />
+            {/** Email address */}
+            <CustomTextInputForm
+              name="emailAddr"
+              label="Email Address"
+              placeholder="Enter email address"
+              leftIconType="feather"
+              leftIconName="mail"
+              autoCapitalize="none"
+              keyboardType="email-address"
+              defaultValue={user?.emailAddress}
+              disabled
+            />
 
-              {/** Email address */}
-              <CustomFormInput
-                name="emailAddr"
-                icon="email"
-                placeholder="Email Address"
-                mode="outlined"
-                autoCapitalize="none"
-                keyboardType="email-address"
-                disabled
-                defaultValue={user?.emailAddress}
-              />
-
-              {/** Submit button */}
-              <CustomButton
-                isPaper
-                style={tw`mt-3`}
-                onPress={handleSubmit}
-                disabled={!isValid || isSubmitting || !dirty}
-              >
-                Update
-              </CustomButton>
-            </View>
-          )}
-        </Formik>
-      </KeyboardAvoidWrapper>
-    </>
-  );
-}
+            {/** Submit button */}
+            <CustomButton
+              isPaper
+              onPress={handleSubmit}
+              stylePaper={tw`mt-3`}
+              disabled={!isValid || isSubmitting || !dirty}
+            >
+              Save Changes
+            </CustomButton>
+          </View>
+        )}
+      </Formik>
+    </KeyboardAvoidWrapper>
+  ); // close return
+} // close component
 
 // Export
 export default FormEditProfile;

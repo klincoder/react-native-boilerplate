@@ -14,15 +14,15 @@ function EditProfileScreen() {
 
   // Return component
   return (
-    <CustomSafeView>
-      {/** Main container */}
-      <View style={tw`p-4`}>
+    <CustomSafeView style={tw`px-4 pt-5`}>
+      {/** SECTION - EDIT PROFILE FORM */}
+      <View>
         {/** Form */}
         <FormEditProfile />
       </View>
     </CustomSafeView>
-  );
-}
+  ); // close return
+} // close component
 
 // Export
 export default EditProfileScreen;

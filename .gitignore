@@ -1,3 +1,4 @@
+# default
 node_modules/
 .expo/
 dist/
@@ -13,5 +14,6 @@ web-build/
 # macOS
 .DS_Store
 
-# misc
+# custom
 .env
+src/assets/fonts

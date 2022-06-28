@@ -1,36 +1,31 @@
 // Import resources
-import React from "react";
+import React, { useState } from "react";
 import { useFormikContext } from "formik";
 import tw from "twrnc";
 
 // Import custom files
-import colors from "../config/colors";
-import CustomFormInput from "./CustomFormInput";
 import CustomAlertModal from "./CustomAlertModal";
 import CustomButton from "./CustomButton";
 import useCustomAlertState from "../hooks/useCustomAlertState";
-import useEmailSender from "../hooks/useEmailSender";
 import useCustomToastState from "../hooks/useCustomToastState";
-import {
-  alertMsg,
-  handleFormValuesChecker,
-  handleGenUsername,
-} from "../config/appConfig";
+import useLoggedInUser from "../hooks/useLoggedInUser";
+import useCustomSpinnerState from "../hooks/useCustomSpinnerState";
+import CustomSpinner from "./CustomSpinner";
+import CustomTextInputForm from "./CustomTextInputForm";
+import CustomText from "./CustomText";
+import { alertMsg, apiRoutes } from "../config/data";
+import { handleIsEmptyForm, handleUserEmail } from "../config/functions";
 
 // Component
-function FormPasswordRecoveryDetails(props) {
-  // Define props
-  const { setShowOtpInput, otpCode, setOtpCode } = props;
-
+function FormPasswordRecoveryDetails({
+  setShowOtpInput,
+  otpCode,
+  setOtpCode,
+  isChangePass,
+  setFormVal,
+}) {
   // Define formik context
   const { values, isSubmitting, isValid, setSubmitting } = useFormikContext();
-
-  // Define formValuesToValidate
-  const formValuesToValidate = {
-    emailAddr: values.emailAddr,
-    newPass: values.newPass,
-    repeatNewPass: values.repeatNewPass,
-  };
 
   // Define alert
   const alert = useCustomAlertState();
@@ -38,8 +33,26 @@ function FormPasswordRecoveryDetails(props) {
   // Define toast
   const toast = useCustomToastState();
 
-  // Define email sender
-  const { handleOtpEmail, handleUserEmailChecker } = useEmailSender();
+  // Define spinner
+  const spinner = useCustomSpinnerState();
+
+  // Define logged in user
+  const { handleEmailExist, userID, username, userEmail } = useLoggedInUser();
+
+  // Define final values
+  const finalEmail = values.emailAddr?.trim()?.toLowerCase();
+
+  // Define isEmptyForm
+  const propsToRemove = [
+    "emailAddr",
+    "verifyCodeInput",
+    "isOtpInput",
+    "isChangePass",
+  ];
+  const isEmptyForm = handleIsEmptyForm(values, propsToRemove);
+
+  // Define state
+  const [hidePass, setHidePass] = useState(true);
 
   // Debug
   // console.log("Debug formPassRecDetails: ", otpCode);
@@ -47,75 +60,98 @@ function FormPasswordRecoveryDetails(props) {
   // FUNCTIONS
   // HANDLE SEND OTP EMAIL
   const handleSendOtpEmail = async () => {
-    // Define isEmptyFormVal
-    const isEmptyFormVal = handleFormValuesChecker(formValuesToValidate);
-    if (isEmptyFormVal) {
+    // Set loading
+    spinner.showLoading();
+    // Define email exist
+    const emailExist = handleEmailExist(finalEmail);
+    // Define user info
+    const userInfoChangePass = {
+      userID: userID,
+      username: username,
+      emailAddress: userEmail,
+    };
+    const userInfo = !isChangePass ? emailExist?.data : userInfoChangePass;
+    // If values are empty
+    if ((!isChangePass && finalEmail === "") || isEmptyForm) {
       // Alert err
       alert.showAlert(alertMsg?.isRequired);
+      spinner.hideLoading();
       return;
-    } // close if
-    // Set otp code state
-    setOtpCode(otpCode);
-    // Set submitting
-    setSubmitting(true);
-    // Check if email already exist
-    const emailChecker = await handleUserEmailChecker(values.emailAddr);
-    // If email address exist, return
-    if (!emailChecker?.isValidEmail) {
+    } else if (!isChangePass && !emailExist?.isValid) {
       // Alert err
       alert.showAlert(alertMsg?.inValidUser);
-      setSubmitting(false);
+      spinner.hideLoading();
       return;
+    } else {
+      // Set form val
+      setFormVal();
+      // Set otp code
+      setOtpCode();
+      // Send otp code
+      await handleUserEmail(
+        userInfo?.username,
+        userInfo?.emailAddress,
+        otpCode,
+        apiRoutes?.otp
+      );
+      // Set submitting
+      setSubmitting(false);
+      // Alert succ
+      toast.success(alertMsg?.otpSent);
+      // Set showOtpInput to true
+      setShowOtpInput();
     } // close if
-    // Get the string before @ in email
-    const username = handleGenUsername(values.emailAddr);
-    // Send email with otp code
-    await handleOtpEmail(username, values.emailAddr, otpCode);
-    // Set submitting
-    setSubmitting(false);
-    // Alert succ
-    toast.success(alertMsg?.otpSucc);
-    // Set showOtpInput to true
-    setShowOtpInput();
   }; // close fxn
 
   // Return component
   return (
     <>
+      {/** Custom spinner */}
+      <CustomSpinner isLoading={spinner.loading} />
+
       {/** Alert modal */}
       <CustomAlertModal
         visible={alert.visible}
-        content={alert.message}
         hideDialog={alert.hideAlert}
         cancelAction={alert.hideAlert}
+        content={<CustomText>{alert.message}</CustomText>}
       />
 
-      {/** New Password */}
-      <CustomFormInput
+      {/** New password */}
+      <CustomTextInputForm
+        isPass
         name="newPass"
-        icon="lock"
-        placeholder="New Password"
-        mode="outlined"
+        label="New Password"
+        placeholder="Enter new password"
+        leftIconName="lock"
+        rightIconType="feather"
+        rightIconName={hidePass ? "eye" : "eye-off"}
+        rightIconOnPress={() => setHidePass(!hidePass)}
+        secureTextEntry={hidePass}
         autoCapitalize="none"
-        secureTextEntry
       />
 
-      {/** Repeat New Password */}
-      <CustomFormInput
+      {/** Repeat new password */}
+      <CustomTextInputForm
+        isPass
         name="repeatNewPass"
-        icon="lock"
-        placeholder="Repeat New Password"
-        mode="outlined"
+        label="Repeat New Password"
+        placeholder="Enter new password"
+        leftIconName="lock"
+        rightIconType="feather"
+        rightIconName={hidePass ? "eye" : "eye-off"}
+        rightIconOnPress={() => setHidePass(!hidePass)}
+        secureTextEntry={hidePass}
         autoCapitalize="none"
-        secureTextEntry
       />
 
-      {/** Email Address*/}
-      <CustomFormInput
+      {/** Email Address */}
+      <CustomTextInputForm
         name="emailAddr"
-        icon="email"
-        placeholder="Email Address"
-        mode="outlined"
+        label="Email Address"
+        placeholder="Enter email address"
+        leftIconType="feather"
+        leftIconName="mail"
         autoCapitalize="none"
         keyboardType="email-address"
       />
@@ -123,10 +159,9 @@ function FormPasswordRecoveryDetails(props) {
       {/** Submit button */}
       <CustomButton
         isPaper
-        color={colors.secondary}
-        style={tw`mt-3`}
         onPress={() => handleSendOtpEmail()}
-        disabled={!isValid || isSubmitting}
+        stylePaper={tw`mt-3`}
+        disabled={!isValid || isSubmitting || spinner.loading}
       >
         Continue
       </CustomButton>
@@ -142,8 +177,8 @@ function FormPasswordRecoveryDetails(props) {
         Test Button
       </CustomButton> */}
     </>
-  );
-}
+  ); // close return
+} // close component
 
 // Export
 export default FormPasswordRecoveryDetails;

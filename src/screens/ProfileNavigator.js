@@ -3,8 +3,8 @@ import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 
 // Import screens or custom files
-import { globalScreenOptions } from "../config/appConfig";
 import ProfileScreen from "../screens/ProfileScreen";
+import { globalScreenOptions } from "../config/data";
 
 // Create stack navigator object
 const Stack = createStackNavigator();
@@ -21,8 +21,8 @@ function ProfileTabNavigator() {
         options={{ headerTitle: "Profile" }}
       />
     </Stack.Navigator>
-  );
-}
+  ); // close return
+} // close component
 
 // Export
 export default ProfileTabNavigator;

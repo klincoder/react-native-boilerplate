@@ -5,8 +5,8 @@ import { Avatar, Headline, Subheading } from "react-native-paper";
 import tw from "twrnc";
 
 // Import custom files
-import { avatarPlaceholder } from "../config/appConfig";
 import useLoggedInUser from "../hooks/useLoggedInUser";
+import { appImages } from "../config/data";
 
 // Component
 function CustomAvatar({
@@ -26,7 +26,7 @@ function CustomAvatar({
   const { userAvatar } = useLoggedInUser();
 
   // Define avatar
-  const avatar = userAvatar || avatarPlaceholder;
+  const avatar = userAvatar || appImages?.avatar;
 
   // Return component
   return (
@@ -66,8 +66,8 @@ function CustomAvatar({
         </View>
       )}
     </>
-  );
-}
+  ); // close return
+} // close component
 
 // Export
 export default CustomAvatar;

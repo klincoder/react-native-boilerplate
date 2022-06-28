@@ -1,48 +1,39 @@
 // Import resources
 import React from "react";
 import { TouchableOpacity, View } from "react-native";
-import { Button, IconButton } from "react-native-paper";
+import { Button } from "react-native-paper";
 import tw from "twrnc";
 
 // Import custom files
-import colors from "../config/colors";
+import CustomIcon from "./CustomIcon";
 import CustomText from "./CustomText";
+import { appColors, appStyles } from "../config/data";
 
 // Component
 function CustomButton({
-  style,
-  isNormal,
   isPaper,
+  isTouchable,
   isIcon,
-  icon,
-  mode,
+  isText,
   children,
-  styleTitle,
-  styleTitleContainer,
+  mode,
+  icon,
+  iconType,
+  iconName,
   onPress,
+  stylePaper,
+  stylePaperLabel,
+  styleTouchableView,
+  styleText,
   ...rest
 }) {
-  // Return
+  // Return component
   return (
     <>
-      {/** Normal button */}
-      {isNormal && (
-        <TouchableOpacity activeOpacity={0.6} onPress={onPress}>
-          <View
-            style={[
-              tw`px-3 py-4 rounded-md bg-[${colors.secondary}]`,
-              styleTitleContainer,
-            ]}
-          >
-            <CustomText
-              style={[
-                tw`font-bold uppercase text-lg text-center text-[${colors.black}]`,
-                styleTitle,
-              ]}
-            >
-              {children}
-            </CustomText>
-          </View>
+      {/** isTouchable */}
+      {isTouchable && (
+        <TouchableOpacity activeOpacity={0.6} onPress={onPress} {...rest}>
+          <View style={styleTouchableView}>{children}</View>
         </TouchableOpacity>
       )}
 
@@ -51,9 +42,9 @@ function CustomButton({
         <Button
           icon={icon || ""}
           mode={mode || "contained"}
-          color={colors.secondary}
-          labelStyle={tw`text-lg`}
-          style={[tw`p-2`, style]}
+          color={appColors?.secondary}
+          labelStyle={stylePaperLabel || tw`text-lg`}
+          style={[tw`p-2 rounded-full py-1`, stylePaper]}
           onPress={onPress}
           {...rest}
         >
@@ -62,10 +53,25 @@ function CustomButton({
       )}
 
       {/** Icon button */}
-      {isIcon && <IconButton icon={icon} {...rest} />}
+      {isIcon && <CustomIcon type={iconType} icon={iconName} {...rest} />}
+
+      {/** isText */}
+      {isText && (
+        <TouchableOpacity activeOpacity={0.6} onPress={onPress} {...rest}>
+          <CustomText
+            style={[
+              tw`text-xl uppercase rounded-full`,
+              appStyles?.bold,
+              styleText,
+            ]}
+          >
+            {children}
+          </CustomText>
+        </TouchableOpacity>
+      )}
     </>
-  );
-}
+  ); // close return component
+} // close component
 
 // Export
 export default CustomButton;

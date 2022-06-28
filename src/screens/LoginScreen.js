@@ -14,14 +14,15 @@ function LoginScreen() {
 
   // Return component
   return (
-    <CustomSafeView>
-      <View style={tw`flex-1 justify-center p-5`}>
-        {/* Form */}
+    <CustomSafeView style={tw`px-4 pt-5`}>
+      {/** SECTION - LOGIN FORM */}
+      <View>
+        {/** Form */}
         <FormLogin />
       </View>
     </CustomSafeView>
-  );
-}
+  ); // close return
+} // close component
 
 // Export
 export default LoginScreen;

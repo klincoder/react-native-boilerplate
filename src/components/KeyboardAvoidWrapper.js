@@ -26,8 +26,8 @@ function KeyboardAvoidWrapper({ children }) {
         </>
       </ScrollView>
     </KeyboardAvoidingView>
-  );
-}
+  ); // close return
+} // close component
 
 // Export
 export default KeyboardAvoidWrapper;

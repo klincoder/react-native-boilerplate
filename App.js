@@ -12,7 +12,7 @@ import paperTheme from "./src/config/paperTheme";
 import AppWrapper from "./src/components/AppWrapper";
 import GetDatabaseContent from "./src/components/GetDatabaseContent";
 
-// Export
+// Export component
 export default function App() {
   // Hide Async storage
   LogBox.ignoreLogs([
@@ -21,7 +21,7 @@ export default function App() {
     "Duplicate atom key 'appSettingsAtom'. This is a FATAL ERROR in production. But it is safe to ignore this warning if it occurred because ofhot module replacement.",
   ]);
 
-  // Return
+  // Return component
   return (
     <RecoilRoot>
       {/** React native provider */}
@@ -39,5 +39,5 @@ export default function App() {
         </NavigationContainer>
       </PaperProvider>
     </RecoilRoot>
-  );
-}
+  ); // close return
+} // close component

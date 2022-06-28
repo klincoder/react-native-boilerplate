@@ -5,10 +5,6 @@ import moment from "moment";
 import tw from "twrnc";
 
 // Import custom files
-import colors from "../config/colors";
-import { profileList } from "../config/data";
-import { alertMsg } from "../config/appConfig";
-import { fireDB, doc, setDoc } from "../config/firebase";
 import CustomSafeView from "../components/CustomSafeView";
 import CustomAvatar from "../components/CustomAvatar";
 import CustomListItem from "../components/CustomListItem";
@@ -18,6 +14,8 @@ import CustomSpinner from "../components/CustomSpinner";
 import useCustomSpinnerState from "../hooks/useCustomSpinnerState";
 import useCustomToastState from "../hooks/useCustomToastState";
 import useLoggedInUser from "../hooks/useLoggedInUser";
+import { profileList, alertMsg, appColors } from "../config/data";
+import { fireDB, doc, setDoc } from "../config/firebase";
 
 // Component
 function ProfileScreen({ navigation }) {
@@ -74,16 +72,14 @@ function ProfileScreen({ navigation }) {
       headerRightContainer: {
         flex: 1,
         justifyContent: "flex-end",
-      },
+      }, // close header right container
       headerRight: () => (
-        <>
-          <View style={tw`flex-row items-center justify-between mr-4`}>
-            {/** Logout */}
-            <Logout isIconButton style={tw`text-[${colors.white}]`} />
-          </View>
-        </>
-      ),
-    });
+        <View style={tw`flex-row items-center justify-between mr-4`}>
+          {/** Logout */}
+          <Logout isNormal style={tw`text-[${appColors?.white}]`} />
+        </View>
+      ), // close header right
+    }); // close navigation
     // Clean up
     return () => (isMounted.current = false);
   }, [navigation]);
@@ -91,21 +87,22 @@ function ProfileScreen({ navigation }) {
   // Return component
   return (
     <CustomSafeView>
-      {/** Spinner */}
+      {/** SECTION - SHOW SPINNER */}
       <CustomSpinner isLoading={spinner.loading} />
-      {/** Scroll view */}
+
+      {/** SECTION SCROLL VIEW */}
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/** Main container */}
         <View>
           {/** Avatar color background */}
-          <View style={tw`p-15 bg-[${colors.secondary}]`}></View>
+          <View style={tw`p-15 bg-[${appColors?.secondary}]`}></View>
+
           {/** Avatar container */}
           <View style={tw`items-center mt-[-50px]`}>
             {/** Avatar */}
             <CustomAvatar
               isNormal
               size={100}
-              style={tw`bg-[${colors.white}]`}
+              style={tw`bg-[${appColors?.white}]`}
             />
           </View>
 
@@ -114,40 +111,43 @@ function ProfileScreen({ navigation }) {
             {/** Loop list */}
             {profileList?.map((item) => {
               // If item isLink
-              if (item.isLink) {
+              if (item?.isLink) {
+                // Return list item
                 return (
                   <CustomListItem
                     isLink
-                    key={item.id}
-                    title={item.title}
-                    iconLeft={item.iconLeft}
+                    key={item?.id}
+                    title={item?.title}
+                    leftIconType={item?.leftIconType}
+                    leftIconName={item?.leftIconName}
                     style={tw`my-2`}
                     onPress={() => navigation.navigate(item.screenLink)}
                   />
-                );
+                ); // close return
               } else {
+                // Return switch
                 return (
                   <CustomSwitch
-                    key={item.id}
-                    style={tw`my-2`}
-                    title={item.title}
-                    iconLeft={item.iconLeft}
+                    key={item?.id}
+                    label={item?.title}
                     value={toggleSwitch}
-                    color={colors.secondary}
+                    leftIconType={item?.leftIconType}
+                    leftIconName={item?.leftIconName}
+                    style={tw`my-2`}
                     onValueChange={(val) => {
                       handleUserPushStatus(val);
                       //console.log("Debug switchVal: ", val);
                     }}
                   />
-                );
+                ); // close return
               } // close if isLink
             })}
           </View>
         </View>
       </ScrollView>
     </CustomSafeView>
-  );
-}
+  ); // close return
+} // close component
 
 // Export
 export default ProfileScreen;

@@ -3,13 +3,17 @@ import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 
 // Import custom files
-import { globalScreenOptions } from "../config/appConfig";
 import OnboardingScreen from "../screens/OnboardingScreen";
 import LoginScreen from "../screens/LoginScreen";
 import RegisterScreen from "../screens/RegisterScreen";
 import PasswordRecoveryScreen from "../screens/PasswordRecoveryScreen";
 import HomeNavigator from "../screens/HomeNavigator";
 import EditProfileScreen from "../screens/EditProfileScreen";
+import { globalScreenOptions } from "../config/data";
+import FeaturesImagePicker from "./FeaturesImagePicker";
+import FeaturesFormInput from "./FeaturesFormInput";
+import FeaturesCodeScanner from "./FeaturesCodeScanner";
+import FeaturesInternetInfo from "./FeaturesInternetInfo";
 
 // Create stack navigator object
 const Stack = createStackNavigator();
@@ -52,6 +56,26 @@ function AppNavigator({ userID }) {
       component: EditProfileScreen,
       options: { headerTitle: "Edit Profile" },
     },
+    {
+      name: "FeaturesImagePicker",
+      component: FeaturesImagePicker,
+      options: { headerTitle: "Image Picker" },
+    },
+    {
+      name: "FeaturesFormInput",
+      component: FeaturesFormInput,
+      options: { headerTitle: "Form Input" },
+    },
+    {
+      name: "FeaturesInternetInfo",
+      component: FeaturesInternetInfo,
+      options: { headerTitle: "Internet Info" },
+    },
+    {
+      name: "FeaturesCodeScanner",
+      component: FeaturesCodeScanner,
+      options: { headerTitle: "Code Scanner" },
+    },
   ];
 
   // Return component
@@ -90,8 +114,8 @@ function AppNavigator({ userID }) {
         )}
       </>
     </Stack.Navigator>
-  );
-}
+  ); // close return
+} // close component
 
 // Export
 export default AppNavigator;

@@ -1,40 +1,31 @@
 // Import resources
-import React from "react";
+import React, { useState } from "react";
+import tw from "twrnc";
 import { View } from "react-native";
 import { useFormikContext } from "formik";
-import tw from "twrnc";
 
 // Import custom files
-import colors from "../config/colors";
-import CustomFormInput from "./CustomFormInput";
 import CustomButton from "./CustomButton";
 import CustomAlertModal from "./CustomAlertModal";
 import CustomText from "./CustomText";
 import useCustomAlertState from "../hooks/useCustomAlertState";
-import useEmailSender from "../hooks/useEmailSender";
 import useCustomToastState from "../hooks/useCustomToastState";
-import {
-  alertMsg,
-  handleFormValuesChecker,
-  handleGenUsername,
-} from "../config/appConfig";
+import useLoggedInUser from "../hooks/useLoggedInUser";
+import CustomSpinner from "./CustomSpinner";
+import useCustomSpinnerState from "../hooks/useCustomSpinnerState";
+import CustomTextInputForm from "./CustomTextInputForm";
+import { handleUserEmail, handleIsEmptyForm } from "../config/functions";
+import { alertMsg, apiRoutes, appColors } from "../config/data";
 
 // Component
-function FormRegisterDetails(props) {
-  // Define props
-  const { setShowOtpInput, otpCode, setOtpCode } = props;
-
+function FormRegisterDetails({
+  setShowOtpInput,
+  otpCode,
+  setOtpCode,
+  setFormVal,
+}) {
   // Define formik context
   const { values, isSubmitting, isValid, setSubmitting } = useFormikContext();
-
-  // Define formValuesToValidate
-  const formValuesToValidate = {
-    firstName: values.firstName,
-    lastName: values.lastName,
-    emailAddr: values.emailAddr,
-    pass: values.pass,
-    repeatPass: values.repeatPass,
-  };
 
   // Define alert
   const alert = useCustomAlertState();
@@ -42,8 +33,18 @@ function FormRegisterDetails(props) {
   // Define toast
   const toast = useCustomToastState();
 
-  // Define email sender
-  const { handleOtpEmail, handleUserEmailChecker } = useEmailSender();
+  // Define spinner
+  const spinner = useCustomSpinnerState();
+
+  // Define user
+  const { handleEmailExist, handleUsernameExist } = useLoggedInUser();
+
+  // Define isEmptyForm
+  const propsToRemove = ["verifyCodeInput", "phoneNum", "isOtpInput"];
+  const isEmptyForm = handleIsEmptyForm(values, propsToRemove);
+
+  // Define state
+  const [hidePass, setHidePass] = useState(true);
 
   // Debug
   //console.log("Debug formRegisterDetails: ", otpCode);
@@ -51,105 +52,128 @@ function FormRegisterDetails(props) {
   // FUNCTIONS
   // HANDLE SEND OTP EMAIL
   const handleSendOtpEmail = async () => {
-    // Define isEmptyFormVal
-    const isEmptyFormVal = handleFormValuesChecker(formValuesToValidate);
-    if (isEmptyFormVal) {
+    // Set loading
+    spinner.showLoading();
+    // Define variables
+    const finalEmail = values.emailAddr?.trim()?.toLowerCase();
+    const finalUsername = values.username?.trim()?.toLowerCase();
+    const emailExist = handleEmailExist(finalEmail);
+    const usernameExist = handleUsernameExist(finalUsername);
+    // If isEmptyForm
+    if (isEmptyForm) {
       // Alert err
       alert.showAlert(alertMsg?.isRequired);
+      spinner.hideLoading();
       return;
-    } // close if
-    // Set otp code state
-    setOtpCode(otpCode);
-    // Set submitting
-    setSubmitting(true);
-    // Check if email already exist
-    const emailChecker = await handleUserEmailChecker(values.emailAddr);
-    // If email address exist, return
-    if (emailChecker?.isValidEmail) {
+    } else if (emailExist?.isValid) {
       // Alert err
-      alert.showAlert(alertMsg?.isValidUser);
-      setSubmitting(false);
+      alert.showAlert(alertMsg?.emailExistErr);
+      spinner.hideLoading();
       return;
-    } // close if
-    // Define username
-    const username = handleGenUsername(values.emailAddr);
-    // Send email with otp code
-    await handleOtpEmail(username, values.emailAddr, otpCode);
-    // Set submitting
-    setSubmitting(false);
-    // Alert succ
-    toast.success(alertMsg?.otpSucc);
-    // Set showOtpInput to true
-    setShowOtpInput();
+    } else if (usernameExist?.isValid) {
+      // Alert err
+      alert.showAlert(alertMsg?.usernameExistErr);
+      spinner.hideLoading();
+      return;
+    } else {
+      // Set form val
+      setFormVal();
+      // Set otp code
+      setOtpCode();
+      // Send otp code to user
+      await handleUserEmail(finalUsername, finalEmail, otpCode, apiRoutes?.otp);
+      // Set submitting
+      setSubmitting(false);
+      // Alert succ
+      toast.success(alertMsg?.otpSent);
+      // Set showOtpInput to true
+      setShowOtpInput();
+    } // close if isEmptyForm
   }; // close fxn
 
   // Return component
   return (
     <>
+      {/** Show spinner */}
+      <CustomSpinner isLoading={spinner.loading} />
+
       {/** Alert modal */}
       <CustomAlertModal
         visible={alert.visible}
-        content={alert.message}
         hideDialog={alert.hideAlert}
         cancelAction={alert.hideAlert}
+        content={<CustomText>{alert.message}</CustomText>}
       />
 
-      {/** First Name */}
-      <View style={tw`flex-row`}>
-        <View style={tw`w-1/2`}>
-          <CustomFormInput
-            name="firstName"
-            icon="account"
-            placeholder="First Name"
-            mode="outlined"
-            autoCapitalize="words"
-          />
-        </View>
+      {/** Full name */}
+      <CustomTextInputForm
+        label="Legal Full Name"
+        name="fullName"
+        placeholder="Enter full name"
+        leftIconName="user"
+        autoCapitalize="words"
+      />
 
-        {/** Last Name */}
-        <View style={tw`w-1/2`}>
-          <CustomFormInput
-            name="lastName"
-            icon="account"
-            placeholder="Last Name"
-            mode="outlined"
-            autoCapitalize="words"
-          />
-        </View>
-      </View>
+      {/** Username */}
+      <CustomTextInputForm
+        name="username"
+        label="Username"
+        placeholder="Enter username"
+        leftIconName="adduser"
+        autoCapitalize="none"
+      />
 
-      {/** Email Address*/}
-      <CustomFormInput
+      {/** Email Address */}
+      <CustomTextInputForm
         name="emailAddr"
-        icon="email"
-        placeholder="Email Address"
-        mode="outlined"
+        label="Email Address"
+        placeholder="Enter email address"
+        leftIconType="feather"
+        leftIconName="mail"
         autoCapitalize="none"
         keyboardType="email-address"
+      />
+
+      {/** Phone number */}
+      <CustomTextInputForm
+        name="phoneNum"
+        label="Phone Number"
+        placeholder="Enter phone number"
+        leftIconType="feather"
+        leftIconName="phone"
+        keyboardType="numeric"
       />
 
       {/** Password */}
       <View style={tw`flex-row`}>
         <View style={tw`w-1/2`}>
-          <CustomFormInput
+          <CustomTextInputForm
+            isPass
             name="pass"
-            icon="lock"
-            placeholder="Password"
-            mode="outlined"
+            label="Password"
+            placeholder="Enter password"
+            leftIconName="lock"
+            rightIconType="feather"
+            rightIconName={hidePass ? "eye" : "eye-off"}
+            rightIconOnPress={() => setHidePass(!hidePass)}
+            secureTextEntry={hidePass}
             autoCapitalize="none"
-            secureTextEntry
           />
         </View>
 
-        {/** Repeat Password */}
+        {/** Repeat pass */}
         <View style={tw`w-1/2`}>
-          <CustomFormInput
+          <CustomTextInputForm
+            isPass
             name="repeatPass"
-            icon="lock"
-            placeholder="Repeat Password"
-            mode="outlined"
+            label="Repeat Password"
+            placeholder="Enter password"
+            leftIconName="lock"
+            rightIconType="feather"
+            rightIconName={hidePass ? "eye" : "eye-off"}
+            rightIconOnPress={() => setHidePass(!hidePass)}
+            secureTextEntry={hidePass}
             autoCapitalize="none"
-            secureTextEntry
           />
         </View>
       </View>
@@ -157,14 +181,14 @@ function FormRegisterDetails(props) {
       {/** Submit button */}
       <CustomButton
         isPaper
-        style={tw`mt-3`}
         onPress={() => handleSendOtpEmail()}
-        disabled={!isValid || isSubmitting}
+        stylePaper={tw`mt-3`}
+        disabled={!isValid || isSubmitting || spinner.loading}
       >
         Create Account
       </CustomButton>
 
-      {/** TEST Button */}
+      {/** TEST BUTTON */}
       {/* <CustomButton
         isNormal
         style={tw`mt-3`}
@@ -179,17 +203,16 @@ function FormRegisterDetails(props) {
           //setShowOtpInput();
         }}
       >
-        Test Button
+        TEST BUTTON
       </CustomButton> */}
 
       {/** Terms */}
-      <CustomText style={tw`mt-2 px-5 text-center text-[${colors.grey}]`}>
-        By creating an account, you accept our terms and conditions. We'll never
-        sell your data.
+      <CustomText style={tw`mt-2 text-center text-[${appColors?.grey}]`}>
+        By creating an account, you agree to accept our privacy policy & terms.
       </CustomText>
     </>
-  );
-}
+  ); // close return
+} // close component
 
 // Export
 export default FormRegisterDetails;

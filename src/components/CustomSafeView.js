@@ -4,20 +4,19 @@ import { SafeAreaView, StatusBar } from "react-native";
 import tw from "twrnc";
 
 // Import custom files
-import colors from "../config/colors";
+import { appColors } from "../config/data";
 
-// Component function
+// Component
 function CustomSafeView({ children, style }) {
   // Return component
   return (
-    <SafeAreaView style={[tw`flex-1 bg-[${colors.white}]`, style]}>
+    <SafeAreaView style={[tw`flex-1 bg-[${appColors?.white}]`, style]}>
       {/** Status bar */}
-      <StatusBar style="auto" backgroundColor={colors.primary} />
-      {/** Children */}
+      <StatusBar style="auto" backgroundColor={appColors?.primary} />
       {children}
     </SafeAreaView>
-  );
-}
+  ); // close return
+} // close component
 
-// Export component
+// Export
 export default CustomSafeView;

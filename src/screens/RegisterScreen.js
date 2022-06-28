@@ -14,14 +14,14 @@ function RegisterScreen() {
 
   // Return component
   return (
-    <CustomSafeView>
-      <View style={tw`flex-1 justify-center px-5`}>
+    <CustomSafeView style={tw`px-4 pt-5`}>
+      <View>
         {/** Form */}
         <FormRegister />
       </View>
     </CustomSafeView>
-  );
-}
+  ); // close return
+} // close component
 
 // Export
 export default RegisterScreen;

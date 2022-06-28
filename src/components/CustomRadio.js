@@ -1,34 +1,28 @@
 // Import resources
 import React from "react";
-import { Checkbox } from "react-native-paper";
+import { RadioButton } from "react-native-paper";
 
 // Import custom files
-import CustomListItem from "./CustomListItem";
 import CustomButton from "./CustomButton";
+import CustomListItem from "./CustomListItem";
 import { appColors } from "../config/data";
 
 // Component
-function CustomCheckbox({
-  name,
-  label,
-  leftIconType,
-  leftIconName,
-  checked,
-  onPress,
-  ...rest
-}) {
+function CustomRadio({ title, value, onValueChange, onPress, ...rest }) {
   // Debug
-  //console.log("Debug customCheckbox: ",)
+  //console.log("Debug customRadio: ",)
 
   // Return component
   return (
     <CustomButton isTouchable onPress={onPress}>
       <CustomListItem
         {...rest}
-        title={label}
+        title={title}
         rightContent={() => (
-          <Checkbox
-            status={checked ? "checked" : "unchecked"}
+          <RadioButton
+            value={value}
+            onValueChange={onValueChange}
+            //status={checked ? "checked" : "unchecked"}
             color={appColors?.primary}
           />
         )}
@@ -38,4 +32,4 @@ function CustomCheckbox({
 } // close component
 
 // Export
-export default CustomCheckbox;
+export default CustomRadio;

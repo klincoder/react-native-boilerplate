@@ -11,15 +11,15 @@ import FormPasswordRecovery from "../components/FormPasswordRecovery";
 function PasswordRecoveryScreen() {
   // Return component
   return (
-    <CustomSafeView>
-      {/* Form */}
-      <View style={tw`flex-1 justify-center px-5`}>
+    <CustomSafeView style={tw`px-4 pt-5`}>
+      {/* SECTION - PASSWORD RECOVERY FORM */}
+      <View>
         {/** Form */}
         <FormPasswordRecovery />
       </View>
     </CustomSafeView>
-  );
-}
+  ); // close return
+} // close component
 
 // Export
 export default PasswordRecoveryScreen;

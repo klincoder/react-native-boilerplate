@@ -1,15 +1,15 @@
 // Import resources
 import React, { useRef, useState } from "react";
+import { Dimensions, StatusBar, FlatList } from "react-native";
 import { useRecoilValue } from "recoil";
 import tw from "twrnc";
-import { Dimensions, StatusBar, FlatList } from "react-native";
 
 // Import custom files
-import colors from "../config/colors";
-import { appOnboardingAtom } from "../recoil/atoms";
 import CustomSafeView from "../components/CustomSafeView";
 import OnboardingItem from "../components/OnboardingItem";
 import OnboardingFooter from "../components/OnboardingFooter";
+import { appOnboardingAtom } from "../recoil/atoms";
+import { appColors } from "../config/data";
 
 // Define dimensions
 const { width, height } = Dimensions.get("window");
@@ -39,11 +39,11 @@ function OnboardingScreen({ navigation }) {
 
   // Return component
   return (
-    <CustomSafeView style={tw`flex-1 bg-[${colors.primary}]`}>
-      {/** Status bar */}
-      <StatusBar backgroundColor={colors.primary} />
+    <CustomSafeView style={tw`bg-[${appColors?.primary}]`}>
+      {/** SECTION - STATUS BAR */}
+      <StatusBar backgroundColor={appColors?.primary} />
 
-      {/** Onboarding slides */}
+      {/** SECTION - ONBOARDING SLIDES */}
       <FlatList
         data={onboardingSlides}
         keyExtractor={(item) => item.id.toString()}
@@ -62,15 +62,15 @@ function OnboardingScreen({ navigation }) {
         )}
       />
 
-      {/** Onboarding footer */}
+      {/** SECTION - ONBOARDING FOOTER */}
       <OnboardingFooter
         height={height}
         slides={onboardingSlides}
         currSlide={currSlideIndex}
       />
     </CustomSafeView>
-  );
-}
+  ); // close return
+} // close component
 
 // Export
 export default OnboardingScreen;

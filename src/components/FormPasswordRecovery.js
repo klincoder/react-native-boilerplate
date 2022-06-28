@@ -5,26 +5,34 @@ import * as Yup from "yup";
 import { useNavigation } from "@react-navigation/native";
 import bcryptjs from "bcryptjs";
 import moment from "moment";
+import tw from "twrnc";
 
 // Import custom files
 import routes from "../screens/routes";
 import KeyboardAvoidWrapper from "./KeyboardAvoidWrapper";
 import CustomSpinner from "./CustomSpinner";
 import CustomAlertModal from "./CustomAlertModal";
-import CustomFormInputOtp from "./CustomFormInputOtp";
+import CustomOtpInput from "./CustomOtpInput";
 import FormPasswordRecoveryDetails from "./FormPasswordRecoveryDetails";
 import useCustomAlertState from "../hooks/useCustomAlertState";
 import useCustomToastState from "../hooks/useCustomToastState";
-import useEmailSender from "../hooks/useEmailSender";
 import useCustomBcrypt from "../hooks/useCustomBcrypt";
-import { alertMsg, handleGenOtpCode } from "../config/appConfig";
+import useLoggedInUser from "../hooks/useLoggedInUser";
+import useAppSettings from "../hooks/useAppSettings";
+import CustomTextLink from "./CustomTextLink";
+import CustomText from "./CustomText";
+import { alertMsg, apiRoutes } from "../config/data";
+import { handleGenOtpCode, handleUserEmail } from "../config/functions";
 import { fireDB, doc, setDoc } from "../config/firebase";
 
 // Component
-function FormPasswordRecovery() {
+function FormPasswordRecovery({ isChangePass }) {
   // Define otp code
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [otpCode, setOtpCode] = useState();
+  const [formVal, setFormVal] = useState();
+
+  // Generate otp code
   const genOtpCode = handleGenOtpCode();
 
   // Define alert state
@@ -36,11 +44,14 @@ function FormPasswordRecovery() {
   // Define navigation
   const navigation = useNavigation();
 
-  // Define email sender
-  const { handlePassChangeEmail, handleUserEmailChecker } = useEmailSender();
-
   // Define custom bcrypt
   const { handleHashCode } = useCustomBcrypt();
+
+  // Define app settings
+  const { handleLogout, todaysDate, todaysDateFormat1 } = useAppSettings();
+
+  // Define user
+  const { handleEmailExist, userID, username, userEmail } = useLoggedInUser();
 
   // Debug
   //console.log("Debug formPassRecovery: ", otpCode);
@@ -48,15 +59,22 @@ function FormPasswordRecovery() {
   // FORM CONFIG
   // Initial values
   const initialValues = {
-    emailAddr: "",
-    newPass: "",
-    repeatNewPass: "",
+    emailAddr: formVal ? formVal?.emailAddr : "",
+    newPass: formVal ? formVal?.newPass : "",
+    repeatNewPass: formVal ? formVal?.repeatNewPass : "",
     verifyCodeInput: "",
+    isOtpInput: showOtpInput,
+    isChangePass: isChangePass,
   };
 
   // Validation
   const validate = Yup.object().shape({
-    emailAddr: Yup.string().required("Required").email("Invalid email address"),
+    isOtpInput: Yup.boolean(),
+    isChangePass: Yup.boolean(),
+    emailAddr: Yup.string().when("isChangePass", {
+      is: false,
+      then: Yup.string().required("Required").email("Invalid email address"),
+    }),
     newPass: Yup.string().required("Required").min(8, "Too short"),
     repeatNewPass: Yup.string()
       .required("Required")
@@ -65,50 +83,74 @@ function FormPasswordRecovery() {
 
   // Submit form
   const onSubmit = async (values, { setSubmitting }) => {
-    // Define user email checker
-    const emailChecker = await handleUserEmailChecker(values.emailAddr);
-    // Define userInfo from email checker
-    const userInfo = emailChecker?.dbUser;
+    // Define variables
+    const finalEmail = values.emailAddr?.trim()?.toLowerCase();
+    const finalNewPass = values.newPass?.trim();
+    const finalVerifyCodeInput = values.verifyCodeInput?.trim()?.toLowerCase();
 
-    // Define username
-    const username = userInfo?.username;
+    // If !finalVerifyCodeInput return
+    if (!finalVerifyCodeInput) return;
+
+    // Define email exist
+    const emailExist = handleEmailExist(finalEmail);
+
+    // Define user info
+    const userInfoChangePass = {
+      userID: userID,
+      username: username,
+      emailAddress: userEmail,
+    };
+    const userInfo = !isChangePass ? emailExist?.data : userInfoChangePass;
+
     // Hash otp code
     const hashOtpCode = await handleHashCode(otpCode);
     // Hash new password
-    const hashNewPass = await handleHashCode(values.newPass);
-
+    const hashNewPass = await handleHashCode(finalNewPass);
     // Verify code input
     const compareVerifyCode = bcryptjs.compareSync(
-      values.verifyCodeInput,
+      finalVerifyCodeInput,
       hashOtpCode
     );
+
+    // Debug
+    // console.log("Debug submitPassRecovery: ", {
+    //   hashOtpCode,
+    //   hashNewPass,
+    //   compareVerifyCode,
+    // });
 
     // If compare verify code
     if (compareVerifyCode) {
       // Update user pass
       const updatePassRef = doc(fireDB, "users", `${userInfo?.userID}`);
+      // Await
       await setDoc(
         updatePassRef,
         {
           password: hashNewPass,
-          dateUpdated: moment().format(),
+          dateUpdated: todaysDate,
         },
         { merge: true }
       )
         .then(async () => {
-          // Send password change email to user
-          await handlePassChangeEmail(
-            username,
-            values.emailAddr,
-            moment().format("MMM, D, YYYY [at] h:mm a")
+          // Send emails
+          // Password change email to user
+          await handleUserEmail(
+            userInfo?.username,
+            userInfo?.emailAddress,
+            todaysDateFormat1,
+            apiRoutes?.passChange
           );
 
           // Alert succ
           toast.success(alertMsg?.passRecoverySucc);
           // Set submitting
           setSubmitting(false);
-          // Navigate
-          navigation.navigate(routes.LOGIN);
+          // If isChangePass, logout user
+          // Else push to login page
+          {
+            isChangePass ? handleLogout() : navigation.navigate(routes.LOGIN);
+          }
         })
         .catch((err) => {
           // Alert err
@@ -120,60 +162,65 @@ function FormPasswordRecovery() {
       alert.showAlert(alertMsg?.otpErr);
       setSubmitting(false);
     } // close if compareVerifyCode
-  };
+  }; // close submit form
 
   // Return component
   return (
-    <>
-      {/** Alert modal */}
-      <CustomAlertModal
-        visible={alert.visible}
-        content={alert.message}
-        hideDialog={alert.hideAlert}
-        cancelAction={alert.hideAlert}
-      />
+    <KeyboardAvoidWrapper>
+      <Formik
+        initialValues={initialValues}
+        onSubmit={onSubmit}
+        validationSchema={validate}
+      >
+        {({ values, isSubmitting, setFieldValue }) => (
+          <>
+            {/** Debug */}
+            {/* {console.log("Form formPassRecValues: ", values)} */}
 
-      {/** Form */}
-      <KeyboardAvoidWrapper>
-        <Formik
-          initialValues={initialValues}
-          onSubmit={onSubmit}
-          validationSchema={validate}
-        >
-          {({ values, isSubmitting }) => (
-            <>
-              {/** Debug */}
-              {/* {console.log("Form formPassRecValues: ", values)} */}
+            {/** Show spinner */}
+            <CustomSpinner isLoading={isSubmitting} />
 
-              {/** Show spinner */}
-              <CustomSpinner isLoading={isSubmitting} />
+            {/** Alert modal */}
+            <CustomAlertModal
+              visible={alert.visible}
+              hideDialog={alert.hideAlert}
+              cancelAction={alert.hideAlert}
+              content={<CustomText>{alert.message}</CustomText>}
+            />
 
-              {/** If showOtpInput */}
-              {showOtpInput ? (
-                <>
-                  {/** Otp input */}
-                  <CustomFormInputOtp
-                    name="verifyCodeInput"
-                    label="Enter OTP"
-                  />
-                </>
-              ) : (
-                <>
-                  {/** Form details */}
-                  <FormPasswordRecoveryDetails
-                    otpCode={genOtpCode}
-                    setOtpCode={() => setOtpCode(genOtpCode)}
-                    setShowOtpInput={() => setShowOtpInput(true)}
-                  />
-                </>
-              )}
-            </>
-          )}
-        </Formik>
-      </KeyboardAvoidWrapper>
-    </>
-  );
-}
+            {/** If showOtpInput */}
+            {showOtpInput ? (
+              <>
+                {/** Otp input */}
+                <CustomOtpInput name="verifyCodeInput" label="Enter OTP" />
+                {/** Restart process */}
+                <CustomTextLink
+                  title="Restart Process"
+                  onPress={() => {
+                    setFieldValue("verifyCodeInput", "");
+                    setShowOtpInput(false);
+                  }}
+                  styleTitle={tw`mt-10 text-center text-lg`}
+                />
+              </>
+            ) : (
+              <>
+                {/** Form details */}
+                <FormPasswordRecoveryDetails
+                  isChangePass={isChangePass}
+                  otpCode={genOtpCode}
+                  setOtpCode={() => setOtpCode(genOtpCode)}
+                  setShowOtpInput={() => setShowOtpInput(true)}
+                  setFormVal={() => setFormVal(values)}
+                />
+              </>
+            )}
+          </>
+        )}
+      </Formik>
+    </KeyboardAvoidWrapper>
+  ); // close return
+} // close component
 
 // Export
 export default FormPasswordRecovery;

@@ -2,61 +2,48 @@
 import { configureFonts, DefaultTheme } from "react-native-paper";
 
 // Import custom files
-import colors from "./colors";
+import { appColors, appFonts } from "./data";
 
 // Define font config
 const fontConfig = {
-  ios: {
-    regular: {
-      fontFamily: "System",
-      fontWeight: "400",
-    },
-    medium: {
-      fontFamily: "System",
-      fontWeight: "500",
-    },
-    light: {
-      fontFamily: "System",
-      fontWeight: "300",
-    },
-    thin: {
-      fontFamily: "System",
-      fontWeight: "100",
-    },
+  regular: {
+    fontFamily: appFonts?.regular,
+    fontWeight: "400",
   },
-  default: {
-    regular: {
-      fontFamily: "sans-serif",
-      fontWeight: "normal",
-    },
-    medium: {
-      fontFamily: "sans-serif-medium",
-      fontWeight: "normal",
-    },
-    light: {
-      fontFamily: "sans-serif-light",
-      fontWeight: "normal",
-    },
-    thin: {
-      fontFamily: "sans-serif-thin",
-      fontWeight: "normal",
-    },
+  medium: {
+    fontFamily: appFonts?.medium,
+    fontWeight: "800",
+  },
+  light: {
+    fontFamily: appFonts?.light,
+    fontWeight: "300",
+  },
+  thin: {
+    fontFamily: appFonts?.thin,
+    fontWeight: "100",
   },
 };
 
-// Define colors
+// Define platform font
+const platformFont = {
+  web: fontConfig,
+  android: fontConfig,
+  ios: fontConfig,
+};
+
+// Define paper theme
 const paperTheme = {
   ...DefaultTheme,
   dark: false,
   roundness: 2,
-  fonts: configureFonts(fontConfig),
+  fonts: configureFonts(platformFont),
   colors: {
     ...DefaultTheme.colors,
-    primary: colors.primary,
-    accent: colors.secondary,
-    notification: colors.danger,
-    disabled: colors.lightblack,
-    //background: colors.lightgrey,
+    primary: appColors?.primary,
+    accent: appColors?.secondary,
+    notification: appColors?.danger,
+    disabled: appColors?.lightblack,
+    //background: appColors?.lightgrey,
   },
 };
 

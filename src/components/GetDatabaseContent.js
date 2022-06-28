@@ -3,7 +3,7 @@ import React, { useRef, useEffect } from "react";
 import { useSetRecoilState, useRecoilValue } from "recoil";
 
 // Import custom files
-import { appSettingsAtom, userAtom } from "../recoil/atoms";
+import { allUsersAtom, appSettingsAtom, userAtom } from "../recoil/atoms";
 import {
   fireDB,
   doc,
@@ -26,8 +26,9 @@ function GetDatabaseContent() {
   const userID = user?.userID;
 
   // Define atom
-  const setUserAtom = useSetRecoilState(userAtom);
   const setAppSettingsAtom = useSetRecoilState(appSettingsAtom);
+  const setAllUsersAtom = useSetRecoilState(allUsersAtom);
+  const setUserAtom = useSetRecoilState(userAtom);
 
   // SIDE EFFECTS
   // LISTEN TO USER DETAILS
@@ -36,6 +37,7 @@ function GetDatabaseContent() {
     if (!userID) return;
     // Get user details from db
     const userRef = doc(fireDB, "users", `${userID}`);
+    // Snapshot
     const unsubscribe = onSnapshot(userRef, (snapshot) => {
       const userData = snapshot.exists() ? snapshot.data() : "";
       // Set atom
@@ -46,26 +48,64 @@ function GetDatabaseContent() {
   }, [userID, setUserAtom]);
 
   // SIDE EFFECTS
+  // API CALLS
+  useEffect(() => {
+    // On mount
+    isMounted.current = true;
+    // IIFE
+    (async () => {
+      // Debug
+      //console.log("Debug getDatabaseContentAPI: ",);
+    })(); // close fxn
+    // Clean up
+    return () => (isMounted.current = false);
+  }, []);
+
+  // SIDE EFFECTS
   // LISTEN TO DATABASE
   useEffect(() => {
     // On mount
     isMounted.current = true;
-
-    // LISTEN TO APP GENERAL SETTINGS
+    // LISTEN TO APP SETTINGS - GENERAL
     const appSettingsRef = doc(fireDB, "appSettings", "generalSettings");
+    // Snapshot
     onSnapshot(appSettingsRef, (snapshot) => {
       const appSettingsData = snapshot.exists() ? snapshot.data() : "";
       // Set atom
       setAppSettingsAtom(appSettingsData);
     });
-    
+
+    // LISTEN TO ALL USERS
+    const allUsersRef = collection(fireDB, "users");
+    // Snapshot
+    onSnapshot(allUsersRef, (snapshot) => {
+      // Set atom
+      setAllUsersAtom(
+        snapshot.docs.map((doc) => {
+          return doc.data();
+        })
+      );
+    });
+
+    // // LISTEN TO SAMPLE
+    // const appOnboardingRef = collection(fireDB, "appOnboarding");
+    // // Snapshot
+    // onSnapshot(appOnboardingRef, (snapshot) => {
+    //   // Set atom
+    //   setAppOnboardingAtom(
+    //     snapshot.docs.map((doc) => {
+    //       return doc.data();
+    //     })
+    //   );
+    // });
+
     // Clean up
     return () => (isMounted.current = false);
-  }, [userID, setAppSettingsAtom]);
+  }, [userID, setAppSettingsAtom, setAllUsersAtom]);
 
   // Return component
   return null;
-}
+} // close component
 
 // Export
 export default GetDatabaseContent;

@@ -6,15 +6,15 @@ const useCustomSpinnerState = () => {
   // Define state
   const [loading, setLoading] = useState(false);
 
-  // Show loading
+  // FUNCTIONS
+  // SHOW LOADING
   const showLoading = () => setLoading(true);
-
-  // Hide loading
+  // HIDE LOADING
   const hideLoading = () => setLoading(false);
 
   // Return component
-  return { loading, showLoading, hideLoading };
-};
+  return { loading, showLoading, hideLoading }; // close return
+}; // close component
 
 // Export
 export default useCustomSpinnerState;
