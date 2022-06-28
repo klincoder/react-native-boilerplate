@@ -40,35 +40,7 @@ function HomeScreen() {
     <CustomSafeView style={tw`px-4 pt-5`}>
       {/** SECTINO - APP FEATURES */}
       <View style={tw`flex-1 items-center justify-center`}>
-        {/** Loop app features list */}
-        <FlatList
-          data={appFeaturesList}
-          keyExtractor={(item) => item?.id?.toString()}
-          contentContainerStyle={tw`flex-1 items-center justify-center`}
-          numColumns={2}
-          ListHeaderComponent={
-            <View style={tw`mb-6`}>
-              <CustomText style={[tw`text-3xl mb-2`]}>App Features</CustomText>
-              <CustomDivider isBold />
-            </View>
-          } // close header
-          renderItem={({ item, index }) => {
-            // Return item
-            return (
-              <CustomButton isTouchable style={tw`mb-3 mr-2`}>
-                <CustomText
-                  style={[
-                    tw`text-base text-black px-4 py-2 rounded-full bg-[${appColors?.lightgrey}]`,
-                    appStyles?.bold,
-                  ]}
-                  onPress={() => navigation.navigate(item?.screenLink)}
-                >
-                  {item?.title}
-                </CustomText>
-              </CustomButton>
-            );
-          }} // close render
-        />
+        <CustomText>Home Screen</CustomText>
 
         {/** TEST BUTTON */}
         {/* <CustomButton

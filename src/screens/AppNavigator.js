@@ -10,10 +10,6 @@ import PasswordRecoveryScreen from "../screens/PasswordRecoveryScreen";
 import HomeNavigator from "../screens/HomeNavigator";
 import EditProfileScreen from "../screens/EditProfileScreen";
 import { globalScreenOptions } from "../config/data";
-import FeaturesImagePicker from "./FeaturesImagePicker";
-import FeaturesFormInput from "./FeaturesFormInput";
-import FeaturesCodeScanner from "./FeaturesCodeScanner";
-import FeaturesInternetInfo from "./FeaturesInternetInfo";
 
 // Create stack navigator object
 const Stack = createStackNavigator();
@@ -60,21 +56,6 @@ function AppNavigator({ userID }) {
       name: "FeaturesImagePicker",
       component: FeaturesImagePicker,
       options: { headerTitle: "Image Picker" },
-    },
-    {
-      name: "FeaturesFormInput",
-      component: FeaturesFormInput,
-      options: { headerTitle: "Form Input" },
-    },
-    {
-      name: "FeaturesInternetInfo",
-      component: FeaturesInternetInfo,
-      options: { headerTitle: "Internet Info" },
-    },
-    {
-      name: "FeaturesCodeScanner",
-      component: FeaturesCodeScanner,
-      options: { headerTitle: "Code Scanner" },
     },
   ];
 
