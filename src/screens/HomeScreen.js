@@ -38,7 +38,7 @@ function HomeScreen() {
   // Return component
   return (
     <CustomSafeView style={tw`px-4 pt-5`}>
-      {/** SECTINO - APP FEATURES */}
+      {/** MAIN CONTAINER */}
       <View style={tw`flex-1 items-center justify-center`}>
         <CustomText>Home Screen</CustomText>
 

@@ -15,7 +15,7 @@ function BlankScreen() {
   // Return component
   return (
     <CustomSafeView style={tw`px-4 pt-3`}>
-      {/** SECTION - STARTER */}
+      {/** MAIN CONTAINER */}
       <View style={tw`flex-1 items-center justify-center`}>
         <CustomText>BlankScreen</CustomText>
       </View>
