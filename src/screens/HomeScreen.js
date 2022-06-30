@@ -12,7 +12,7 @@ import CustomDivider from "../components/CustomDivider";
 import useLoggedInUser from "../hooks/useLoggedInUser";
 import useCustomSpinnerState from "../hooks/useCustomSpinnerState";
 import CustomButton from "../components/CustomButton";
-import { appColors, appFeaturesList, appStyles } from "../config/data";
+import { appColors } from "../config/data";
 import { internetConnAtom } from "../recoil/atoms";
 
 // Component

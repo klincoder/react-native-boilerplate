@@ -3,6 +3,7 @@ import React, { useLayoutEffect, useRef, useState } from "react";
 import { ScrollView, View } from "react-native";
 import moment from "moment";
 import tw from "twrnc";
+import { useNavigation } from "@react-navigation/native";
 
 // Import custom files
 import CustomSafeView from "../components/CustomSafeView";
@@ -18,7 +19,10 @@ import { profileList, alertMsg, appColors } from "../config/data";
 import { fireDB, doc, setDoc } from "../config/firebase";
 
 // Component
-function ProfileScreen({ navigation }) {
+function ProfileScreen() {
+  // Define navigation
+  const navigation = useNavigation();
+
   // Define isMounted
   const isMounted = useRef(null);
 
