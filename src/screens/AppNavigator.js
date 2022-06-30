@@ -52,11 +52,6 @@ function AppNavigator({ userID }) {
       component: EditProfileScreen,
       options: { headerTitle: "Edit Profile" },
     },
-    {
-      name: "FeaturesImagePicker",
-      component: FeaturesImagePicker,
-      options: { headerTitle: "Image Picker" },
-    },
   ];
 
   // Return component

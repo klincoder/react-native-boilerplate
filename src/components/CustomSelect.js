@@ -8,7 +8,7 @@ import tw from "twrnc";
 import CustomHelperText from "./CustomHelperText";
 import CustomText from "./CustomText";
 import CustomIcon from "./CustomIcon";
-import { appColors, appStyles } from "../config/data";
+import { appColors, appFonts } from "../config/data";
 
 // Component function
 function CustomSelect({
@@ -48,7 +48,13 @@ function CustomSelect({
         <View style={tw`mb-5`}>
           {/** Label */}
           {label && (
-            <CustomText style={[tw`text-base`, appStyles?.bold, labelStyle]}>
+            <CustomText
+              style={[
+                tw`text-base`,
+                { fontFamily: appFonts?.medium },
+                labelStyle,
+              ]}
+            >
               {label}
             </CustomText>
           )}

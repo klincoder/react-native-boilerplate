@@ -8,7 +8,7 @@ import tw from "twrnc";
 import CustomText from "./CustomText";
 import CustomIcon from "./CustomIcon";
 import CustomHelperText from "./CustomHelperText";
-import { appColors, appStyles } from "../config/data";
+import { appColors, appFonts } from "../config/data";
 
 // Component
 function CustomTextInput({
@@ -35,7 +35,9 @@ function CustomTextInput({
     <View style={tw`mb-3`}>
       {/** Label */}
       {label && (
-        <CustomText style={[tw`text-base`, appStyles?.bold, labelStyle]}>
+        <CustomText
+          style={[tw`text-base`, { fontFamily: appFonts?.medium }, labelStyle]}
+        >
           {label}
         </CustomText>
       )}
